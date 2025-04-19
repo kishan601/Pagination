@@ -1,0 +1,53 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: #009688;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .button:hover:not(:disabled) {
+    background-color: #00796b;
+  }
+  
+  .button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 150, 136, 0.4);
+  }
+  
+  .button:disabled {
+    background-color: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+  }
+  
+  .button-page {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+  }
+  
+  .button-page.active {
+    background-color: #00796b;
+  }
+  
+  .button-text {
+    background-color: transparent;
+    color: #009688;
+  }
+  
+  .button-text:hover:not(:disabled) {
+    background-color: rgba(0, 150, 136, 0.1);
+  }
+  
+  .button-text:disabled {
+    background-color: transparent;
+    color: #9e9e9e;
+  }

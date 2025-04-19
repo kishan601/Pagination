@@ -1,0 +1,38 @@
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2rem 0;
+    gap: 1rem;
+  }
+  
+  .pagination-info {
+    color: #616161;
+    font-size: 0.875rem;
+  }
+  
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .pagination-pages {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .pagination-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    color: #616161;
+  }
+  
+  @media (min-width: 640px) {
+    .pagination-container {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
