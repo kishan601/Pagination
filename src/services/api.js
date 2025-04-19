@@ -1,25 +1,15 @@
-/**
- * Service to handle API requests for employee data
- */
-
-const API_URL = 'https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json';
-
-/**
- * Fetch employee data from the API
- * @returns {Promise<Array>} - Array of employee objects
- */
+// In your API service file
 export const fetchEmployees = async () => {
-  try {
-    const response = await fetch(API_URL);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch employees: ${response.status}`);
+    try {
+      const response = await fetch('https://geektrust.s3-ap-southeast-1.amazonaws.com/adminui-problem/members.json');
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      // This is the key part - match the alert message expected by the test
+      window.alert('Failed to fetch data: ' + error.message);
+      // You might want to return an empty array or throw the error depending on how your app handles it
+      return [];
     }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Error fetching employee data:', error);
-    throw error;
-  }
-};
+  };
