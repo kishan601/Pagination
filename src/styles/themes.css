@@ -1,0 +1,52 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    
+    --transition-speed: 0.3s;
+  }
+  
+  /* Light Theme (default) */
+  :root[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --hover-color: #e9ecef;
+    --table-header-bg: #f1f1f1;
+    --table-row-hover: #f5f5f5;
+    --table-border: #e0e0e0;
+    --table-striped: #f9f9f9;
+    --input-bg: #fff;
+    --input-border: #ced4da;
+  }
+  
+  /* Dark Theme */
+  :root[data-theme="dark"] {
+    --bg-primary: #1e1e2f;
+    --bg-secondary: #27293d;
+    --text-primary: #e4e4e4;
+    --text-secondary: #a9a9a9;
+    --border-color: #444444;
+    --hover-color: #36384a;
+    --table-header-bg: #36384a;
+    --table-row-hover: #2c2e3e;
+    --table-border: #444444;
+    --table-striped: #23243a;
+    --input-bg: #27293d;
+    --input-border: #444444;
+  }
+  
+  /* Transition for theme changes */
+  body {
+    transition: background-color var(--transition-speed) ease-in-out, 
+                color var(--transition-speed) ease-in-out;
+  }
+  
+  .theme-transition {
+    transition: all var(--transition-speed) ease-in-out;
+  }

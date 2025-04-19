@@ -1,100 +1,135 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchEmployees } from '../services/api';
-import { getPaginatedData, getTotalPages } from '../utils/paginationUtils';
+import { filterEmployees } from '../utils/filterUtils';
+import { sortEmployees } from '../utils/sortUtils';
 
-/**
- * Custom hook to fetch and manage employee data with pagination
- * @param {number} perPage - Number of items per page
- * @returns {Object} - Employee data state and handlers
- */
-const useEmployeeData = (perPage = 10) => {
+const useEmployeeData = () => {
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Calculate total pages
-  const totalPages = getTotalPages(filteredEmployees.length, perPage);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState(null);
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
   
-  // Get current page data
-  const currentEmployees = getPaginatedData(filteredEmployees, currentPage, perPage);
-
-  // Fetch employee data on component mount
+  // Fetch employees data
   useEffect(() => {
     const getEmployees = async () => {
+      setLoading(true);
       try {
-        setIsLoading(true);
         const data = await fetchEmployees();
         setEmployees(data);
         setFilteredEmployees(data);
-      } catch (err) {
-        setError(err.message);
+        setError(null);
+      } catch (error) {
+        setError(error.message);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-
+    
     getEmployees();
   }, []);
-
-  // Filter employees based on search term
+  
+  // Apply search and sort whenever dependencies change
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredEmployees(employees);
-    } else {
-      const term = searchTerm.toLowerCase();
-      const filtered = employees.filter(
-        employee => 
-          employee.name.toLowerCase().includes(term) ||
-          employee.email.toLowerCase().includes(term) ||
-          employee.role.toLowerCase().includes(term)
-      );
-      setFilteredEmployees(filtered);
+    let result = [...employees];
+    
+    // Apply search filter with debounced search term
+    if (debouncedSearchTerm) {
+      result = filterEmployees(result, debouncedSearchTerm);
     }
     
-    // Reset to first page when search term changes
-    setCurrentPage(1);
-  }, [searchTerm, employees]);
-
-  // Pagination handlers
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+    // Apply sorting
+    if (sortConfig) {
+      result = sortEmployees(result, sortConfig);
     }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const goToPage = (page) => {
-    const pageNumber = parseInt(page, 10);
-    if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
-
-  // Search handler
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-  };
-
+    
+    setFilteredEmployees(result);
+    
+    // Clear selections when filter/sort changes
+    setSelectedEmployees([]);
+  }, [employees, debouncedSearchTerm, sortConfig]);
+  
+  // Sort handler
+  const handleSort = useCallback((key) => {
+    setSortConfig(prevConfig => {
+      if (!prevConfig || prevConfig.key !== key) {
+        return { key, direction: 'ascending' };
+      }
+      
+      if (prevConfig.direction === 'ascending') {
+        return { key, direction: 'descending' };
+      }
+      
+      return null; // Reset sorting if clicked third time
+    });
+  }, []);
+  
+  // Select/deselect handlers
+  const toggleSelectEmployee = useCallback((id) => {
+    setSelectedEmployees(prevSelected => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter(empId => empId !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
+  }, []);
+  
+  const toggleSelectAll = useCallback((currentPageEmployees) => {
+    const currentPageIds = currentPageEmployees.map(emp => emp.id);
+    
+    setSelectedEmployees(prevSelected => {
+      // Check if all current page items are already selected
+      const allSelected = currentPageIds.every(id => prevSelected.includes(id));
+      
+      if (allSelected) {
+        // Deselect all current page items
+        return prevSelected.filter(id => !currentPageIds.includes(id));
+      } else {
+        // Select all current page items that aren't already selected
+        const newSelections = currentPageIds.filter(id => !prevSelected.includes(id));
+        return [...prevSelected, ...newSelections];
+      }
+    });
+  }, []);
+  
+  // Employee CRUD operations
+  const deleteEmployees = useCallback((ids) => {
+    setEmployees(prevEmployees => 
+      prevEmployees.filter(emp => !ids.includes(emp.id))
+    );
+    setSelectedEmployees(prevSelected => 
+      prevSelected.filter(id => !ids.includes(id))
+    );
+  }, []);
+  
+  const updateEmployee = useCallback((id, updatedData) => {
+    setEmployees(prevEmployees => 
+      prevEmployees.map(emp => 
+        emp.id === id ? { ...emp, ...updatedData } : emp
+      )
+    );
+  }, []);
+  
   return {
-    employees: currentEmployees,
-    totalEmployees: filteredEmployees.length,
-    currentPage,
-    totalPages,
-    isLoading,
+    employees: filteredEmployees,
+    loading,
     error,
     searchTerm,
-    goToNextPage,
-    goToPreviousPage,
-    goToPage,
-    handleSearch
+    setSearchTerm,
+    debouncedSearchTerm,
+    setDebouncedSearchTerm,
+    sortConfig,
+    handleSort,
+    selectedEmployees,
+    toggleSelectEmployee,
+    toggleSelectAll,
+    deleteEmployees,
+    updateEmployee,
+    allEmployees: employees
   };
 };
 
